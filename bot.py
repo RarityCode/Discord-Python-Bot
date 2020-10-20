@@ -2,9 +2,7 @@ import discord
 from discord.ext import commands
 import botconfig
 
-#hi= 'Добро пожаловать на сервер '+member+'!'
-#bye= 'Мы будем скучать '+member+'!'
-bot=commands.Bot(command_prefix='!')
+bot=commands.Bot(command_prefix='!') # bot prefix for later use
 client=discord.Client()
 SMchannel=discord.Guild.system_channel
 
@@ -16,10 +14,10 @@ async def on_ready():
 async def on_member_join(member):
     print('1')
     hi = 'Добро пожаловать {}, на сервер {}!'.format(member.mention, server.name)
-    #await client.send_message(SMchannel, hi)
     await SMchannel.send(hi)
-
-#async def on_member_remove(member):
-#CODE
+async def on_member_remove(member):
+    print('2')
+    bye = 'Прощай {}, мы будем скучать.'.format(member.mention)
+    await SMchannel.send(bye)
 
 bot.run(botconfig.TOKEN)
