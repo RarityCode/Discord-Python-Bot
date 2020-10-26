@@ -1,23 +1,22 @@
-import discord
-from discord.ext import commands
+from discord import Intents, Guild
+from discord.ext.commands import Bot
 import botconfig
 
-bot=commands.Bot(command_prefix='!') # bot prefix for later use
-client=discord.Client()
-SMchannel=discord.Guild.system_channel
+intents = Intents(members=True, guilds=True)
+bot = Bot(command_prefix='!', intents=intents)  # bot prefix for later use
 
 @bot.event
 async def on_ready():
     print('logged on')
 
-@client.event
-async def on_member_join(member):
-    print('1')
-    hi = 'Добро пожаловать {}, на сервер {}!'.format(member.mention, server.name)
-    await SMchannel.send(hi)
-async def on_member_remove(member):
-    print('2')
+@bot.event
+async def on_member_join(member):  # greetings
+    hi = 'Добро пожаловать {}, на сервер {}!'.format(member.mention, member.guild.name)
+    await member.guild.system_channel.send(hi)
+@bot.event
+async def on_member_remove(member):  # farewells
     bye = 'Прощай {}, мы будем скучать.'.format(member.mention)
-    await SMchannel.send(bye)
+    await member.guild.system_channel.send(bye)
 
-bot.run(botconfig.TOKEN)
+if __name__ == "__main__":
+    bot.run(botconfig.TOKEN)
