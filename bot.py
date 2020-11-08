@@ -1,8 +1,9 @@
+import discord
 from discord import Intents
-from discord.ext.commands import Bot, has_permissions, has_role
+from discord.ext.commands import Bot, has_permissions
 import botconfig
 
-intents = Intents(members=True, guilds=True, messages=True)
+intents = Intents(members=True, guilds=True, messages=True, reactions=True)
 bot = Bot(command_prefix='!', intents=intents)  # bot prefix for later use
 target = ""
 emote = ""
@@ -43,18 +44,63 @@ async def on_member_remove(member):  # farewells
 
 
 @bot.command()
+async def emoji_date(ctx, arg):  # set the day of the month, when bot will start counting
+    ec_date = arg
+    await ctx.send(f'Подсчёт включён, установленная дата: {ec_date} число.')
+
+
+'''
+@bot.command()
 async def emoji_counting(ctx, arg):
     if arg == 'on':
         # ON CODE
+        list_of_messages = []
+        #reactions = []
+        for channel in bot.get_all_channels():
+            if channel.type.name == 'text':
+                messages = await channel.history(limit=None).flatten()
+                list_of_messages.extend(messages)
+        for message in list_of_messages:
+            rec = ctx.author.fetch_message(771059276239077406)
+            #if message.reactions >0:
+            #reac = message
+            print('logged on')
+
+            #mes = message.author.fetch_message(message.id)
+            #reactions = discord.utils.get(message.reactions)
+        print(channel)
+        print('logged on')
         await ctx.send(f'Подсчёт включён, {ctx.message.author.mention}.')
-    if arg == 'off':
-        # OFF CODE
-        await ctx.send(f'Подсчёт выключён, {ctx.message.author.mention}.')
+'''
 
 
 @bot.command()
 @has_permissions(administrator=True)
-async def fireban(ctx, arg, arg1):  # setting the target of reactions
+async def mes(ctx):
+    reaction_counter = []
+    for emoji in ctx.author.guild.emojis:  # list of custom emojis
+        ctr = [emoji, 0]
+        reaction_counter.append(ctr)
+    for channel in bot.get_all_channels():  # cycle of messages on server
+        if channel.type.name == 'text':
+            messages = await channel.history(limit=None).flatten()
+            for message in messages:
+                if message.reactions.__len__ is not None:  # reaction counting
+                    for reaction in message.reactions:
+                        for counter in reaction_counter:
+                            if counter[0] == reaction.emoji:
+                                counter[1] = counter[1] + reaction.count
+                for emoji in reaction_counter:  # emoji counting in text
+                    string = ':' + emoji[0].name + ':'
+                    if string in message.content:
+                        emoji[1] = emoji[1] + 1
+    for emoji in reaction_counter:
+        await ctx.send(f'{emoji[0]} - {emoji[1]}.')
+
+
+@bot.command()
+@has_permissions(administrator=True)
+async def reacts(ctx, arg, arg1):  # setting the target of reactions
     global target, emote
     target = arg
     emote = arg1
