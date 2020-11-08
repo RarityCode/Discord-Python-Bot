@@ -49,34 +49,9 @@ async def emoji_date(ctx, arg):  # set the day of the month, when bot will start
     await ctx.send(f'Подсчёт включён, установленная дата: {ec_date} число.')
 
 
-'''
-@bot.command()
-async def emoji_counting(ctx, arg):
-    if arg == 'on':
-        # ON CODE
-        list_of_messages = []
-        #reactions = []
-        for channel in bot.get_all_channels():
-            if channel.type.name == 'text':
-                messages = await channel.history(limit=None).flatten()
-                list_of_messages.extend(messages)
-        for message in list_of_messages:
-            rec = ctx.author.fetch_message(771059276239077406)
-            #if message.reactions >0:
-            #reac = message
-            print('logged on')
-
-            #mes = message.author.fetch_message(message.id)
-            #reactions = discord.utils.get(message.reactions)
-        print(channel)
-        print('logged on')
-        await ctx.send(f'Подсчёт включён, {ctx.message.author.mention}.')
-'''
-
-
 @bot.command()
 @has_permissions(administrator=True)
-async def mes(ctx):
+async def emoji_counting(ctx):
     reaction_counter = []
     for emoji in ctx.author.guild.emojis:  # list of custom emojis
         ctr = [emoji, 0]
