@@ -9,56 +9,35 @@ bot = Bot(command_prefix='!', intents=intents)
 bot.remove_command('help')
 target = ""
 emote = ""
-SystemChannel = ''
-bye1 = ''
-bye2 = ''
-hi1 = ''
-hi2 = ''
-hi3 = ''
+bye1 = 'So long '
+bye2 = '.'
+hi1 = 'Welcome '
+hi2 = ' to '
+hi3 = '!'
 
 
 def emoji_sort(emoji):
     return emoji[1]
 
 
-def check_sc():  # checking if SystemChannel is set
-    global SystemChannel
-    for user in bot.get_all_members():
-        if user.id == botconfig.ID:
-            if user.guild.system_channel is None:
-                print('System channel not set.')
-                return False
-            else:
-                SystemChannel = user.guild.system_channel
-                return True
-
-
 @bot.event
 async def on_ready():
     print('logged on')
-    if check_sc():
-        await SystemChannel.send('Systems ready!')
-        status1 = discord.Activity(type=discord.ActivityType.listening,
-                                   name='your commands.\nType !help to receive full list of commands.')
-        await bot.change_presence(activity=status1)
-    else:
-        status2 = discord.Activity(type=discord.ActivityType.listening,
-                                   name='your commands.\nType !help to receive full list of commands.\nWarning: System Channel not set, some features will not work.')
-        await bot.change_presence(activity=status2)
+    status = discord.Activity(type=discord.ActivityType.listening,
+                              name='your commands.\nType !help to receive full list of commands.')
+    await bot.change_presence(activity=status)
 
 
 @bot.event
 async def on_member_join(member):  # greetings
-    if check_sc():
-        hi = f'{hi1}{member.mention}{hi2}{member.guild.name}{hi3}'
-        await SystemChannel.send(hi)
+    hi = f'{hi1}{member.mention}{hi2}{member.guild.name}{hi3}'
+    await member.guild.system_channel.send(hi)
 
 
 @bot.event
 async def on_member_remove(member):  # farewells
-    if check_sc():
-        bye = f'{bye1}{member.mention}{bye2}'
-        await SystemChannel.send(bye)
+    bye = f'{bye1}{member.mention}{bye2}'
+    await member.guild.system_channel.send(bye)
 
 
 @bot.event
@@ -86,11 +65,11 @@ async def help(ctx):
                    value='Bot will add reaction on every post of defined user.\nname - name of the target user\nemoji - emoji that bot will use',
                    inline=False)
     post.add_field(name='!emoji_counting',
-                   value='Bot will count used on server reactions and emojis and will post statistics.', inline=False)
-    post.add_field(name='!set_hi text1 text2 text3',
+                   value='Bot will count emoji used on server and in reactions, then will post statistic.', inline=False)
+    post.add_field(name='!set_hi "text1" "text2" "text3"',
                    value='Bot will send a message when member joins the server.\ntext1 - text in quotation marks that will be placed before mentioning new member\ntext2 - text in quotation marks that will be placed between mention and your server name\ntext3 - text in quotation marks that will be placed after your server name',
                    inline=False)
-    post.add_field(name='!set_bye text1 text2',
+    post.add_field(name='!set_bye "text1" "text2"',
                    value='Bot will send a message when member leaves the server.\ntext1 - text in quotation marks that will be placed before mentioning left member\ntext2 - text in quotation marks that will be placed after mentioning left member',
                    inline=False)
     await ctx.send(embed=post)
@@ -119,7 +98,6 @@ async def set_bye(ctx, arg, arg1):
 @has_permissions(administrator=True)
 async def emoji_counting(ctx):
     date = datetime.now(tz=None).replace(day=1)
-    print(date)
     date_month = date.month - 1
     date_year = date.year - 1
     if date_month < 1:
@@ -130,7 +108,6 @@ async def emoji_counting(ctx):
     for emoji in ctx.author.guild.emojis:  # list of custom emojis
         ctr = [emoji, 0]
         reaction_counter.append(ctr)
-    print('Step 1')
     for channel in bot.get_all_channels():  # cycle of messages on server
         if channel.type.name == 'text':
             messages = await channel.history(limit=None, after=date).flatten()
@@ -138,22 +115,17 @@ async def emoji_counting(ctx):
                 if message.reactions.__len__ is not None:  # reaction counting
                     for reaction in message.reactions:
                         for counter in reaction_counter:
-                            print('Step 0.3')
                             if counter[0] == reaction.emoji:
                                 counter[1] = counter[1] + reaction.count
                 for emoji in reaction_counter:  # emoji counting in text
-                    print('Step 0.5')
                     string = ':' + emoji[0].name + ':'
                     if string in message.content:
                         emoji[1] = emoji[1] + 1
-    print('Step 2')
     reaction_counter.sort(key=emoji_sort)
     for emoji in reaction_counter:
         await ctx.send(f'{emoji[0]} - {emoji[1]}.')
-        print('Step 0.7')
         if emoji[1] <= 10:
             await emoji[0].delete(reason='Использовалась меньше десяти раз.')
-    print('Step 3')
 
 
 if __name__ == "__main__":
