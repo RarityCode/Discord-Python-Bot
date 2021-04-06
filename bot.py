@@ -8,6 +8,7 @@ intents = Intents(members=True, guilds=True, messages=True, reactions=True)
 bot = Bot(command_prefix='!', intents=intents)
 bot.remove_command('help')
 target = ""
+target_server = ''
 emote = ""
 bye1 = 'So long '
 bye2 = '.'
@@ -43,15 +44,16 @@ async def on_member_remove(member):  # farewells
 @bot.event
 async def on_message(message):  # posts defined reaction on all posts of defined user
     await bot.process_commands(message)  # without this on_message breaks bot.commands
-    if message.author.mention == target:
+    if message.author.mention == target and message.guild == target_server:
         await message.add_reaction(emote)
 
 
 @bot.command()
 @has_permissions(administrator=True)
 async def reacts(ctx, arg, arg1):  # setting the target of reactions
-    global target, emote
+    global target, emote, target_server
     target = arg.replace("@!", "@")  # for some reason ordinary mention and author.mention differ - ordinary mention includes exclamation mark
+    target_server = ctx.guild
     emote = arg1
     await ctx.send(f'Жертвой выбран {target}.')
 
